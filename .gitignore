@@ -1,0 +1,59 @@
+# 依存
+node_modules/
+.pnpm-store/
+
+# ビルド成果物
+dist/
+build/
+out/
+.next/
+.nuxt/
+.turbo/
+
+# テスト・カバレッジ
+coverage/
+playwright-report/
+test-results/
+.vitest/
+
+# 環境変数（機密）
+.env
+.env.*
+!.env.example
+
+# IDE / エディタ
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# ログ・キャッシュ
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.cache/
+
+# TypeScript
+*.tsbuildinfo
+
+# Prisma（ローカル開発用 sqlite など）
+*.db
+*.db-journal
+
+# 一時ファイル
+tmp/
+temp/
+*.tmp
+
+# Claude Code / spec-kit の機密ファイル（スキル本体は管理対象、認証情報のみ除外）
+.claude/.credentials*
+.claude/cache/
+.claude/local-settings.json
+.claude/.last_session.json
