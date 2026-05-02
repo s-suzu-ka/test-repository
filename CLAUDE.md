@@ -1,4 +1,4 @@
-# 開発テンプレートキット（AI × Spec × Test Driven）
+# 電車遅延通知Bot
 
 本リポジトリは **AI 駆動開発（AIDD）× 仕様駆動開発（SDD）× テスト駆動開発（TDD）** を前提とした新規プロジェクトの **スタータテンプレート** である。`projects/` 配下に新規プロジェクトを起こす際は、本テンプレートを起点として複製し、必要な箇所を書き換えて利用する。
 
@@ -80,17 +80,17 @@
 
 組織憲法に準拠する。
 
-| 種別 | 採用技術 |
-| ---- | -------- |
-| 言語 | TypeScript |
-| フロントエンド | Next.js |
-| バックエンド | NestJS |
-| ORM | Prisma |
-| バリデーション | Zod |
-| 単体・結合テスト | Vitest |
-| E2E テスト | Playwright |
-| API モック | MSW |
-| インフラ | AWS |
+| 種別             | 採用技術   |
+| ---------------- | ---------- |
+| 言語             | TypeScript |
+| フロントエンド   | Next.js    |
+| バックエンド     | NestJS     |
+| ORM              | Prisma     |
+| バリデーション   | Zod        |
+| 単体・結合テスト | Vitest     |
+| E2E テスト       | Playwright |
+| API モック       | MSW        |
+| インフラ         | AWS        |
 
 ## ディレクトリ構成（推奨）
 
@@ -130,15 +130,15 @@
 
 ## ドキュメント運用
 
-| ドキュメント | 役割 | 更新タイミング | 更新手段 |
-| ------------ | ---- | -------------- | -------- |
-| `.specify/memory/constitution.md` | プロジェクト憲法（不変原則） | 重要な原則の変更時 | `/speckit-constitution` |
-| `specs/<feature>/spec.md` | 機能仕様（What / Why） | 機能追加・変更前に必ず | `/speckit-specify` |
-| `specs/<feature>/plan.md` | 実装計画（HOW） | 仕様確定後 | `/speckit-plan` |
-| `specs/<feature>/tasks.md` | 機能タスク分解 | 計画確定後 | `/speckit-tasks` |
-| `docs/adr/` | アーキテクチャ決定記録 | 不可逆 / 影響大の技術選定時 | 手動 |
-| `docs/runbook/` | 運用手順 | 運用に変更があったとき | 手動 |
-| `README.md` | 人間向けの概要・起動方法 | 起動方法が変わったとき | 手動 |
+| ドキュメント                      | 役割                         | 更新タイミング              | 更新手段                |
+| --------------------------------- | ---------------------------- | --------------------------- | ----------------------- |
+| `.specify/memory/constitution.md` | プロジェクト憲法（不変原則） | 重要な原則の変更時          | `/speckit-constitution` |
+| `specs/<feature>/spec.md`         | 機能仕様（What / Why）       | 機能追加・変更前に必ず      | `/speckit-specify`      |
+| `specs/<feature>/plan.md`         | 実装計画（HOW）              | 仕様確定後                  | `/speckit-plan`         |
+| `specs/<feature>/tasks.md`        | 機能タスク分解               | 計画確定後                  | `/speckit-tasks`        |
+| `docs/adr/`                       | アーキテクチャ決定記録       | 不可逆 / 影響大の技術選定時 | 手動                    |
+| `docs/runbook/`                   | 運用手順                     | 運用に変更があったとき      | 手動                    |
+| `README.md`                       | 人間向けの概要・起動方法     | 起動方法が変わったとき      | 手動                    |
 
 ## コーディング規約
 
@@ -204,6 +204,8 @@
 - spec-kit リポジトリ: <https://github.com/github/spec-kit>
 
 <!-- SPECKIT START -->
+
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
+
 <!-- SPECKIT END -->
