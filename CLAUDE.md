@@ -1,12 +1,12 @@
 # 電車遅延通知Bot
 
-本リポジトリは **AI 駆動開発（AIDD）× 仕様駆動開発（SDD）× テスト駆動開発（TDD）** を前提とした新規プロジェクトの **スタータテンプレート** である。
+本リポジトリは **AI 駆動開発（AIDD）× 仕様駆動開発（SDD）× テスト駆動開発（TDD）** を前提としたプロジェクトである。
 
-> 上位ルール: 組織憲法（`/CLAUDE.md`）と全エージェント共通ルール（`/AGENTS.md`）が常に優先される。本ファイルはその下位ルールとして、テンプレート由来プロジェクトの開発作法を定義する。
+> 本ファイルは Claude Code 向けのプロジェクト固有指示である。各エージェント定義（`.claude/agents/*.md`）と整合させて運用する。
 
 ## 開発哲学（三本柱）
 
-本テンプレートの開発はすべて以下の三本柱に従う。順序・優先度は **SDD → TDD → AIDD** とする。
+本プロジェクトの開発はすべて以下の三本柱に従う。順序・優先度は **SDD → TDD → AIDD** とする。
 
 ### 1. 仕様駆動開発（SDD: Spec-Driven Development）
 
@@ -36,15 +36,44 @@
 ### 3. AI 駆動開発（AIDD: AI-Driven Development）
 
 - 各工程は AI エージェント（Claude Code）が駆動する
-- エージェントは **組織憲法の指揮系統** に従う（CEO → 秘書 Iris → COO Hermes → 担当エージェント）
+- 本プロジェクトのエージェント構成は **Planner → Generator → Evaluator** の 3 体制（後述「エージェント構成」参照）
 - AI への指示・コミット・ドキュメントはすべて **日本語**
 - AI が出力したコードは必ずテストで検証する。AI を信用してテストを省略しない
 
-## 開発フロー（必須）
+## エージェント構成
 
-新機能・変更は spec-kit のスラッシュコマンドを起点に以下のフローで進める。
+本プロジェクトでは [.claude/agents/](.claude/agents/) に定義された 3 体のサブエージェントで spec-kit フローを駆動する。役割の境界は各エージェント定義（`*.md`）の Boundaries セクションに準拠する。
+
+| エージェント | モデル | 担当範囲 | 主要スキル |
+| --- | --- | --- | --- |
+| **[planner](.claude/agents/planner.md)** | opus | spec-kit フロー **1〜7**（憲法・仕様・明確化・計画・タスク・チェックリスト・**Red テスト**） | `/speckit-constitution` `/speckit-specify` `/speckit-clarify` `/speckit-plan` `/speckit-tasks` `/speckit-checklist` |
+| **[generator](.claude/agents/generator.md)** | sonnet | spec-kit フロー **8**（**Green 実装**：Red テストを通す最小実装） | `/speckit-implement` |
+| **[evaluator](.claude/agents/evaluator.md)** | opus | 仕様適合性 / テスト健全性 / コード品質 / セキュリティ / プロジェクトルール準拠の **5 観点評価**（read-only） | `/speckit-analyze` |
+
+### ハンドオフの原則
 
 ```text
+Planner ──(ハンドオフサマリ)──▶ Generator ──(ハンドオフサマリ)──▶ Evaluator
+   ▲                                                                  │
+   └────────────────── FAIL（仕様/テスト不足の差し戻し）────────────────┘
+                                  │
+                              CONDITIONAL_PASS（軽微指摘の差し戻し）
+                                  │
+                                  ▼
+                              Generator
+```
+
+- **Planner → Generator**: 機能名・ブランチ・spec/plan/tasks のパス・Red テスト一覧・着手順序を明記
+- **Generator → Evaluator**: 完了タスク・編集ファイル・テスト結果（全 Green の実行ログ）を明記
+- **Evaluator の判定**: `PASS` / `CONDITIONAL_PASS`（Generator に差し戻し）/ `FAIL`（Planner または Generator に差し戻し）
+- 役割の越境は禁止（例: Generator は spec.md を書き換えない、Evaluator は実装を編集しない）
+
+## 開発フロー（必須）
+
+新機能・変更は spec-kit のスラッシュコマンドを起点に以下のフローで進める。担当エージェントを各ステップに併記する。
+
+```text
+[Planner]
 1. /speckit-constitution        ← プロジェクト憲法を初期化／更新（初回のみ）
    ↓
 2. /speckit-specify              ← 機能仕様（spec.md）を生成・更新
@@ -58,17 +87,21 @@
 6. /speckit-checklist (任意)     ← 仕様の完全性を検証
    ↓
 7. テスト作成（Red）              ← 受け入れ条件をテストコードに翻訳
-   ↓
+
+[Generator]
 8. /speckit-implement または手動実装（Green）
    ↓
 9. リファクタリング                ← 構造改善（テストは通ったまま）
-   ↓
-10. ドキュメント同期               ← spec.md / plan.md / ADR を更新
-   ↓
-11. /speckit-git-commit & プッシュ
+
+[Evaluator]
+10. /speckit-analyze + テスト/Lint/Typecheck 実行 ← 5 観点で合否判定
+    ↓
+11. ドキュメント同期               ← spec.md / plan.md / ADR を更新（PASS 時、Generator が実施）
+    ↓
+12. /speckit-git-commit & プッシュ
 ```
 
-**スキップ禁止のステップ:** 2（specify）/ 7（テスト）/ 10（ドキュメント同期）。
+**スキップ禁止のステップ:** 2（specify）/ 7（テスト）/ 10（評価）/ 11（ドキュメント同期）。
 
 ## 言語
 
@@ -78,7 +111,7 @@
 
 ## 技術スタック
 
-組織憲法に準拠する。
+`.specify/memory/constitution.md` に準拠する。プロジェクト要件に応じて `apps/web` / `apps/api` / インフラ等の採用可否は変動する（[README.md](README.md) も参照）。
 
 | 種別             | 採用技術   |
 | ---------------- | ---------- |
@@ -102,6 +135,7 @@
 │   └── memory/
 │       └── constitution.md  # プロジェクト憲法
 ├── .claude/
+│   ├── agents/            # サブエージェント定義（planner / generator / evaluator）
 │   └── skills/            # spec-kit スラッシュコマンド（speckit-*）
 ├── specs/                 # spec-kit が機能ごとに生成（spec.md / plan.md / tasks.md）
 ├── docs/
@@ -126,7 +160,7 @@
     └── workflows/         # CI（lint / test / build）
 ```
 
-> 単一プリケーションのみで構成する場合は `apps/` を展開せずフラットに置いてよい。テンプレート利用時に不要なディレクトリは削除する。
+> 単一アプリケーションのみで構成する場合は `apps/` を展開せずフラットに置いてよい。不要なディレクトリは削除する。
 
 ## ドキュメント運用
 
@@ -151,7 +185,7 @@
 
 ## セキュリティ
 
-組織憲法のセキュリティ規定を継承する。以下のファイルは読み込み・コミット・出力を一切禁止する。
+以下のファイルは読み込み・コミット・出力を一切禁止する。
 
 - `.env`、`.env.*`
 - `credentials.json`、`secrets.json`、`serviceAccountKey.json`
@@ -165,12 +199,13 @@
 ### MUST
 
 1. 作業開始前に **`.specify/memory/constitution.md` と該当 `specs/<feature>/spec.md` を必ず読む**
-2. 機能追加・変更は **specify → plan → tasks → test → implement** の順で行う（spec-kit フロー）
+2. 機能追加・変更は **specify → plan → tasks → test → implement → evaluate** の順で行う（spec-kit フロー）
 3. テストを書かずに実装をマージしない
 4. すべての出力（応答・コミット・コメント）は日本語
-5. 組織憲法（`/CLAUDE.md`）の指揮系統に従う。担当エージェントへの作業振り分けは必ず **COO（Hermes）経由**
-6. 作業完了ごとにコミット & リモートプッシュする（組織共通ルール）
-7. 仕様変更を伴う実装をした場合は、同じ PR / コミット内で `specs/<feature>/spec.md` を更新する
+5. 役割に応じて適切なサブエージェントへ委譲する（Planner / Generator / Evaluator）。各エージェントの Boundaries（`.claude/agents/*.md`）を越境しない
+6. 各エージェントは完了時に **ハンドオフサマリ** を必ず出力し、次工程の前提を明示する
+7. 評価（Evaluator）で `PASS` を得てからコミットする
+8. 仕様変更を伴う実装をした場合は、同じ PR / コミット内で `specs/<feature>/spec.md` を更新する
 
 ### NEVER
 
@@ -182,24 +217,20 @@
 6. AI 生成コードをテストせずに「完了」と報告しない
 7. `.specify/` および `.claude/skills/speckit-*` を手動編集しない（spec-kit 管理領域）
 
-## テンプレート利用時のチェックリスト
+## 初期セットアップチェックリスト
 
-新規プロジェクトに本テンプレートを複製した場合、以下を必ず実施する。
+新規開発を開始する場合、以下を必ず実施する。
 
-- [ ] `CLAUDE.md` 冒頭の見出しをプロジェクト名に書き換え
-- [ ] `README.md` をプロジェクト概要に書き換え
-- [ ] `package.json` の `name` を変更
 - [ ] `/speckit-constitution` でプロジェクト憲法を初期化（`.specify/memory/constitution.md`）
 - [ ] `/speckit-specify` で初期機能の仕様を作成（`specs/<feature>/spec.md`）
 - [ ] 不要なディレクトリ（モノレポ構成等）を削除
 - [ ] CI（`.github/workflows/`）が動くことを確認
-- [ ] 初回コミット & varet-corp Organization へ Private リポジトリとして push
 
 ## 参照
 
-- 組織憲法: `/CLAUDE.md`
-- 共通エージェントルール: `/AGENTS.md`
-- プロジェクト初期化スキル: `/.claude/agents/coo/skills/project-bootstrap/`
+- エージェント定義: [.claude/agents/planner.md](.claude/agents/planner.md) / [generator.md](.claude/agents/generator.md) / [evaluator.md](.claude/agents/evaluator.md)
+- spec-kit スキル: [.claude/skills/](.claude/skills/)（`speckit-*`）
+- プロジェクト憲法: [.specify/memory/constitution.md](.specify/memory/constitution.md)
 - spec-kit ドキュメント: <https://github.github.io/spec-kit/>
 - spec-kit リポジトリ: <https://github.com/github/spec-kit>
 
